@@ -1,0 +1,30 @@
+.itemList {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.itemInfoInList {
+  display: flex;
+}
+
+.cart {
+  position: relative;
+  .cartList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .infoModal {
+    display: block;
+    position: absolute;
+    left: 0;
+    transform: translateX(-100%);
+  }
+  .buy {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
