@@ -107,7 +107,7 @@ function App() {
 
                     <Form.Group className="mb-3" controlId="formBasicPassword">
                       <Form.Label>연락처</Form.Label>
-                      <Form.Control type="password" placeholder="000-0000-0000" />
+                      <Form.Control type="tel" placeholder="000-0000-0000" />
                       <Form.Text className="text-muted">영어, 특수기호, 한글 압수.</Form.Text>
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="formBasicCheckbox">
@@ -117,8 +117,8 @@ function App() {
                 </Modal.Body>
 
                 <Modal.Footer>
-                  <Button variant="secondary">Close</Button>
-                  <Button variant="primary">Save changes</Button>
+                  <Button variant="secondary">취소하기</Button>
+                  <Button variant="primary">구매하기</Button>
                 </Modal.Footer>
               </Modal.Dialog>
             </div>
