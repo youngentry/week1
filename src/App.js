@@ -36,15 +36,15 @@ const getPriceComma = (price) => {
 };
 
 function App() {
-  const [shoesData, setShoesData] = useState(PRODUCT_DATA);
-  const [number, setNumber] = useState(0);
-
   // ----- 데이터 불러오기 -----
+  const [shoesData, setShoesData] = useState(PRODUCT_DATA);
+
   useEffect(() => {
     axios.get(`https://codingapple1.github.io/shop/data${2}.json`).then((result) => {
       setShoesData([...shoesData, ...result.data]);
     });
   }, []);
+  // ----- 데이터 불러오기 -----
 
   // ----- 모달창 visible -----
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -90,7 +90,7 @@ function App() {
   const plusCartItemAmount = (id, boolean) => {
     setIdSelectedItem(id);
     const itemFoundByIdFromCartList = cartList.find((cartItem) => cartItem.id === id);
-    // 수량++
+    // 수량을 1더하기 한다.
     if (boolean) {
       return (itemFoundByIdFromCartList.amount += 1);
     }
@@ -118,10 +118,10 @@ function App() {
   // ----- 장바구니에서 선택한 제품 삭제하기 -----
 
   // ----- 장바구니에 담긴 아이템 전체가격 -----
-  const getPriceTotalFromCartList = () => {
+  const getPriceTotalFromCartList = (itemList) => {
     let priceTotal = 0;
 
-    cartList.forEach((item) => {
+    itemList.forEach((item) => {
       priceTotal += item.price * item.amount;
     });
 
@@ -209,21 +209,20 @@ function App() {
 
               <ListGroup.Item className="buy">
                 {/* 토탈 */}
-                <strong>
-                  총 액수 : {getPriceTotalFromCartList()} 원 <i>❌</i>
-                </strong>
+                <strong>총 액수 : {getPriceTotalFromCartList(cartList)}원</strong>
                 <Button onClick={() => setIsModalVisible(true)} variant="primary">
                   구매하기
                 </Button>
               </ListGroup.Item>
               <ListGroup.Item>드래거블존</ListGroup.Item>
             </ListGroup>
+            {/* 모달창 */}
             <div className={`modal show infoModal ${isModalVisible ? "visible" : "invisible"}`} ref={refModal}>
-              {/* 모달창 */}
               <Modal.Dialog>
                 <Modal.Header>
                   <Modal.Title>
-                    개인정보입력 <CloseButton onClick={() => setIsModalVisible(false)} />
+                    <span className="modalTitle">개인정보입력</span>
+                    <CloseButton onClick={() => setIsModalVisible(false)} />
                   </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -244,7 +243,7 @@ function App() {
                     </Form.Group>
                   </Form>
                 </Modal.Body>
-
+                <div style={{ margin: "0 0 10px 10px" }}>총 액수 : {getPriceTotalFromCartList()}원</div>
                 <Modal.Footer>
                   <Button variant="secondary">취소하기</Button>
                   <Button variant="primary">구매하기</Button>
