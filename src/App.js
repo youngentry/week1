@@ -1,7 +1,7 @@
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useEffect, useState } from "react";
-import { Button, Card, Col, Container, Form, ListGroup, Modal, Row, Stack } from "react-bootstrap";
+import { useEffect, useRef, useState } from "react";
+import { Button, Card, CloseButton, Col, Container, Form, ListGroup, Modal, Row, Stack } from "react-bootstrap";
 import "./css/App.scss";
 
 const PRODUCT_DATA = [
@@ -31,14 +31,57 @@ function App() {
   const [shoesArray, setShoesArray] = useState(PRODUCT_DATA);
   const [number, setNumber] = useState(0);
 
+  // ----- 데이터 불러오기 -----
   useEffect(() => {
     axios.get(`https://codingapple1.github.io/shop/data${2}.json`).then((result) => {
       setShoesArray([...shoesArray, ...result.data]);
     });
   }, []);
 
+  // ----- 모달창 visible -----
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const refModal = useRef();
+
+  useEffect(() => {
+    // 모달이 열려 있고 모달의 바깥쪽을 눌렀을 때 창 닫기
+    const clickOutside = (e) => {
+      if (isModalVisible && !refModal.current.contains(e.target)) {
+        setIsModalVisible(false);
+      }
+    };
+    document.addEventListener("mousedown", clickOutside);
+
+    return () => {
+      // Cleanup the event listener
+      document.removeEventListener("mousedown", clickOutside);
+    };
+  }, [isModalVisible]);
+  // ----- 모달창 visible -----
+
+  // ----- 장바구니에 제품 추가하기 -----
+  const [cartList, setCartList] = useState([]);
+  const [idSelectedItem, setIdSelectedItem] = useState(null);
+  const addItemIntoCartList = (id) => {
+    // id와 같은 제품을 데이터에서 찾기
+    setIdSelectedItem(id);
+    const foundItemById = shoesArray.find((shoesData) => shoesData.id === id);
+
+    // cartList 데이터 업데이트하기 (있으면 수량++, 없으면 상품목록에 추가)
+    if (foundItemById.amount) {
+      return (foundItemById.amount += 1);
+    }
+    foundItemById.amount = 1;
+    setCartList([foundItemById, ...cartList]);
+  };
+
+  useEffect(() => {
+    setIdSelectedItem(null);
+  }, [idSelectedItem]);
+  // ----- 장바구니에 제품 추가하기 -----
+
   return (
     <div className="App">
+      {/* 상품목록 */}
       <Container className="mt-5">
         <Row>
           <Col sm={8}>
@@ -53,7 +96,9 @@ function App() {
                         <Card.Body>
                           <Card.Title>{data.title}</Card.Title>
                           <Card.Text>{data.content}</Card.Text>
-                          <Button variant="primary">장바구니에 추가</Button>
+                          <Button variant="primary" onClick={() => addItemIntoCartList(data.id)}>
+                            장바구니에 추가
+                          </Button>
                         </Card.Body>
                       </Card>
                     );
@@ -62,41 +107,56 @@ function App() {
               </Col>
             </Row>
           </Col>
+
+          {/* 장바구니 */}
           <Col className="cart" sm={4}>
             <h2>장바구니</h2>
             <ListGroup>
+              {/* 상품명 */}
               <ListGroup.Item>
                 <ul>
-                  <li className="cartList">
-                    <strong>상품명</strong>
-                    <div className="itemInfoInList">
-                      <strong>가격</strong>
-                      <strong>
-                        Total : 000 원 <i>❌</i>
-                      </strong>
-                    </div>
-                    <div>
-                      <Button variant="primary">-</Button>
-                      <Button variant="light">{number}</Button>
-                      <Button variant="primary">+</Button>
-                    </div>
-                  </li>
+                  {cartList.map((itemInCart, index) => {
+                    return (
+                      <li key={index} className="cartList">
+                        <strong>
+                          {itemInCart.title}
+                          <CloseButton />
+                        </strong>
+                        <div className="itemInfoInList">
+                          <Card.Img className="cartItemImage" variant="top" src={`https://codingapple1.github.io/shop/shoes${index + 1}.jpg`} />
+
+                          <strong>합계 : {itemInCart.price} 원</strong>
+                        </div>
+                        <div>
+                          <Button variant="primary">-</Button>
+                          <Button variant="light">{itemInCart.amount}</Button>
+                          <Button variant="primary">+</Button>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               </ListGroup.Item>
+
               <ListGroup.Item className="buy">
+                {/* 토탈 */}
                 <strong>
                   Total : 000 원 <i>❌</i>
                 </strong>
-                <Button variant="primary">구매하기</Button>
+                <Button onClick={() => setIsModalVisible(true)} variant="primary">
+                  구매하기
+                </Button>
               </ListGroup.Item>
               <ListGroup.Item>드래거블존</ListGroup.Item>
             </ListGroup>
-            <div className="modal show infoModal">
+            <div className={`modal show infoModal ${isModalVisible ? "visible" : "invisible"}`} ref={refModal}>
+              {/* 모달창 */}
               <Modal.Dialog>
-                <Modal.Header closeButton>
-                  <Modal.Title>개인정보입력</Modal.Title>
+                <Modal.Header>
+                  <Modal.Title>
+                    개인정보입력 <CloseButton onClick={() => setIsModalVisible(false)} />
+                  </Modal.Title>
                 </Modal.Header>
-
                 <Modal.Body>
                   <Form>
                     <Form.Group className="mb-3" controlId="formBasicEmail">
@@ -111,7 +171,7 @@ function App() {
                       <Form.Text className="text-muted">영어, 특수기호, 한글 압수.</Form.Text>
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="formBasicCheckbox">
-                      <Form.Check type="checkbox" checked="checked" label="이벤트성 광고를 1시간마다 수신하지 않지 않지 않지 않지 않지 않지 않지 않지 않지 않겠습니다." />
+                      <Form.Check type="checkbox" label="이벤트성 광고를 1시간마다 수신하지 않지 않지 않지 않지 않지 않지 않지 않지 않지 않겠습니다." />
                     </Form.Group>
                   </Form>
                 </Modal.Body>
