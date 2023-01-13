@@ -27,14 +27,22 @@ const PRODUCT_DATA = [
   },
 ];
 
+/** 
+  숫자 세자리마다 콤마 찍기 위함 ex) 1000 => 1,000
+  @param number
+*/
+const getPriceComma = (price) => {
+  return price.toLocaleString("ko-KR");
+};
+
 function App() {
-  const [shoesArray, setShoesArray] = useState(PRODUCT_DATA);
+  const [shoesData, setShoesData] = useState(PRODUCT_DATA);
   const [number, setNumber] = useState(0);
 
   // ----- 데이터 불러오기 -----
   useEffect(() => {
     axios.get(`https://codingapple1.github.io/shop/data${2}.json`).then((result) => {
-      setShoesArray([...shoesArray, ...result.data]);
+      setShoesData([...shoesData, ...result.data]);
     });
   }, []);
 
@@ -58,41 +66,91 @@ function App() {
   }, [isModalVisible]);
   // ----- 모달창 visible -----
 
+  // ~장바구니
   // ----- 장바구니에 제품 추가하기 -----
   const [cartList, setCartList] = useState([]);
   const [idSelectedItem, setIdSelectedItem] = useState(null);
   const addItemIntoCartList = (id) => {
     // id와 같은 제품을 데이터에서 찾기
     setIdSelectedItem(id);
-    const foundItemById = shoesArray.find((shoesData) => shoesData.id === id);
+
+    const itemFoundByIdFromShoesData = shoesData.find((shoes) => shoes.id === id);
 
     // cartList 데이터 업데이트하기 (있으면 수량++, 없으면 상품목록에 추가)
-    if (foundItemById.amount) {
-      return (foundItemById.amount += 1);
+    if (itemFoundByIdFromShoesData.amount) {
+      return (itemFoundByIdFromShoesData.amount += 1);
     }
-    foundItemById.amount = 1;
-    setCartList([foundItemById, ...cartList]);
+    itemFoundByIdFromShoesData.amount = 1;
+    setCartList([...cartList, itemFoundByIdFromShoesData]);
   };
 
+  // ----- 장바구니에 제품 추가하기 -----
+
+  // ----- 장바구니 제품 "+", "-"로 수량 바꾸기 -----
+  const plusCartItemAmount = (id, boolean) => {
+    setIdSelectedItem(id);
+    const itemFoundByIdFromCartList = cartList.find((cartItem) => cartItem.id === id);
+    // 수량++
+    if (boolean) {
+      return (itemFoundByIdFromCartList.amount += 1);
+    }
+
+    // 수량이 1이상일 때 -1
+    if (itemFoundByIdFromCartList.amount > 0) {
+      itemFoundByIdFromCartList.amount -= 1;
+    }
+  };
+  // ----- 장바구니 제품 "+", "-"로 수량 바꾸기 -----
+
+  // ----- 장바구니에서 선택한 제품 삭제하기 -----
+  const removeCartItem = (id) => {
+    const tempCartList = [...cartList];
+    const itemIndexSelectedByIdFromCartList = tempCartList.findIndex((tempCartItem) => tempCartItem.id === id);
+    const itemFoundByIdFromCartList = tempCartList.find((tempCartItem) => tempCartItem.id === id);
+
+    // 수량 초기화
+    itemFoundByIdFromCartList.amount = 0;
+    // 제품 배열에서 제외
+    tempCartList.splice(itemIndexSelectedByIdFromCartList, 1);
+
+    setCartList([...tempCartList]);
+  };
+  // ----- 장바구니에서 선택한 제품 삭제하기 -----
+
+  // ----- 장바구니에 담긴 아이템 전체가격 -----
+  const getPriceTotalFromCartList = () => {
+    let priceTotal = 0;
+
+    cartList.forEach((item) => {
+      priceTotal += item.price * item.amount;
+    });
+
+    priceTotal = getPriceComma(priceTotal);
+    return priceTotal;
+  };
+  // ----- 장바구니에 담긴 아이템 전체가격 -----
+
+  // 장바구니 렌더링용 state 변화감지
   useEffect(() => {
     setIdSelectedItem(null);
+    console.log(cartList);
   }, [idSelectedItem]);
-  // ----- 장바구니에 제품 추가하기 -----
+  // 장바구니~
 
   return (
     <div className="App">
       {/* 상품목록 */}
-      <Container className="mt-5">
+      <Container className="mt-5" style={{ minWidth: "1000px" }}>
         <Row>
           <Col sm={8}>
             <h2>제품목록</h2>
             <Row className="g-5">
               <Col sm>
                 <ListGroup className="itemList">
-                  {shoesArray?.map((data, index) => {
+                  {shoesData?.map((data, index) => {
                     return (
                       <Card className="itemCard" key={data.id} style={{ width: "18rem" }}>
-                        <Card.Img variant="top" src={`https://codingapple1.github.io/shop/shoes${index + 1}.jpg`} />
+                        <Card.Img variant="top" src={`https://codingapple1.github.io/shop/shoes${data.id + 1}.jpg`} />
                         <Card.Body>
                           <Card.Title>{data.title}</Card.Title>
                           <Card.Text>{data.content}</Card.Text>
@@ -115,33 +173,44 @@ function App() {
               {/* 상품명 */}
               <ListGroup.Item>
                 <ul>
-                  {cartList.map((itemInCart, index) => {
-                    return (
-                      <li key={index} className="cartList">
-                        <strong>
-                          {itemInCart.title}
-                          <CloseButton />
-                        </strong>
-                        <div className="itemInfoInList">
-                          <Card.Img className="cartItemImage" variant="top" src={`https://codingapple1.github.io/shop/shoes${index + 1}.jpg`} />
+                  {cartList.length ? (
+                    cartList.map((cartItem, index) => {
+                      return (
+                        <li key={cartItem.id} className="cartList">
+                          <div className="cartItemCard">
+                            <div className="text">
+                              <strong className="cartItemTitle">{cartItem.title}</strong>
+                              {getPriceComma(cartItem.price)}원
+                            </div>
+                            <CloseButton onClick={() => removeCartItem(cartItem.id)} />
+                          </div>
+                          <div className="itemInfoInList">
+                            <Card.Img className="cartItemImage" variant="top" src={`https://codingapple1.github.io/shop/shoes${cartItem.id + 1}.jpg`} />
 
-                          <strong>합계 : {itemInCart.price} 원</strong>
-                        </div>
-                        <div>
-                          <Button variant="primary">-</Button>
-                          <Button variant="light">{itemInCart.amount}</Button>
-                          <Button variant="primary">+</Button>
-                        </div>
-                      </li>
-                    );
-                  })}
+                            <strong>합계 : {getPriceComma(cartItem.price * cartItem.amount)} 원</strong>
+                          </div>
+                          <div>
+                            <Button variant="primary" onClick={() => plusCartItemAmount(cartItem.id, false)}>
+                              -
+                            </Button>
+                            <Button variant="light">{cartItem.amount}</Button>
+                            <Button variant="primary" onClick={() => plusCartItemAmount(cartItem.id, true)}>
+                              +
+                            </Button>
+                          </div>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <span>장바구니에 담긴 상품이 없습니다.</span>
+                  )}
                 </ul>
               </ListGroup.Item>
 
               <ListGroup.Item className="buy">
                 {/* 토탈 */}
                 <strong>
-                  Total : 000 원 <i>❌</i>
+                  총 액수 : {getPriceTotalFromCartList()} 원 <i>❌</i>
                 </strong>
                 <Button onClick={() => setIsModalVisible(true)} variant="primary">
                   구매하기

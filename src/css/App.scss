@@ -17,11 +17,20 @@
 }
 
 .cart {
+  min-width: 300px;
   position: relative;
   .cartList {
     display: flex;
     flex-direction: column;
     gap: 10px;
+
+    .cartItemCard {
+      display: flex;
+      justify-content: space-between;
+    }
+    .cartItemTitle {
+      margin-right: 10px;
+    }
 
     .cartItemImage {
       width: 100px;
