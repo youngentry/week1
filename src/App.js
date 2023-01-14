@@ -60,11 +60,17 @@ function App() {
     setIsModalVisible(true);
   };
 
+  const clearModalInput = () => {
+    setName("");
+    setPhoneNumber("");
+  };
+
   useEffect(() => {
     // 모달이 열려 있고 모달의 바깥쪽을 눌렀을 때 창 닫기
     const clickOutside = (e) => {
-      if (isModalVisible && !refModal.current.contains(e.target)) {
+      if ((isModalVisible && !refModal.current.contains(e.target)) || !isModalVisible) {
         setIsModalVisible(false);
+        clearModalInput();
       }
     };
     document.addEventListener("mousedown", clickOutside);
@@ -74,6 +80,7 @@ function App() {
       document.removeEventListener("mousedown", clickOutside);
     };
   }, [isModalVisible]);
+
   // ----- 모달창 visible -----
 
   // ~장바구니
@@ -163,6 +170,33 @@ function App() {
     console.log(cartList);
   }, [idSelectedItem, cartList]);
   // 장바구니~
+
+  // ----- 개인정보입력 -----
+  const [name, setName] = useState("");
+
+  const checkName = (name) => {
+    // ^:첫문자부터 $:끝문자까지 *:공백을 포함하여 1회 이상
+    const checkKorean = /^[ㄱ-ㅎ|가-힣]*$/;
+    if (!checkKorean.test(name)) {
+      window.alert(`잘못된 입력입니다. "${name.slice(-1)}"`);
+      return name.slice(0, name.length - 1);
+    }
+
+    return name;
+  };
+
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+  const checkPhoneNumber = (phoneNumber) => {
+    const checkNumber = /^[0-9]*$/;
+    if (!checkNumber.test(phoneNumber)) {
+      window.alert(`잘못된 입력입니다. "${phoneNumber.slice(-1)}"`);
+      return phoneNumber.slice(0, phoneNumber.length - 1);
+    }
+
+    return phoneNumber;
+  };
+  // ----- 개인정보입력 -----
 
   return (
     <div className="App">
@@ -264,13 +298,13 @@ function App() {
                   <Form>
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                       <Form.Label>이름</Form.Label>
-                      <Form.Control type="text" placeholder="이름" />
+                      <Form.Control type="text" placeholder="이름" maxLength={4} onChange={(e) => setName(checkName(e.target.value))} value={name} />
                       <Form.Text className="text-muted">영어, 5글자 이상, 특수기호 압수.</Form.Text>
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formBasicPassword">
                       <Form.Label>연락처</Form.Label>
-                      <Form.Control type="tel" placeholder="000-0000-0000" />
+                      <Form.Control type="tel" placeholder="000-0000-0000" maxLength={11} onChange={(e) => setPhoneNumber(checkPhoneNumber(e.target.value))} value={phoneNumber} />
                       <Form.Text className="text-muted">영어, 특수기호, 한글 압수.</Form.Text>
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="formBasicCheckbox">
@@ -280,8 +314,12 @@ function App() {
                 </Modal.Body>
                 <div style={{ margin: "0 0 10px 10px" }}>총 액수 : {getPriceComma(priceTotal)}원</div>
                 <Modal.Footer>
-                  <Button variant="secondary">취소하기</Button>
-                  <Button variant="primary">구매하기</Button>
+                  <Button variant="secondary" onClick={() => setIsModalVisible(false)}>
+                    취소하기
+                  </Button>
+                  <Button variant="primary" onClick={() => setIsModalVisible(false)}>
+                    다음으로
+                  </Button>
                 </Modal.Footer>
               </Modal.Dialog>
             </div>

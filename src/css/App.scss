@@ -36,15 +36,29 @@
       width: 100px;
     }
   }
-  .infoModal {
+  .infoModal,
+  .receiptModal {
     position: absolute;
+    min-width: 300px;
+    max-width: 500px;
     left: 0;
     transform: translateX(-100%);
 
-    .modalTitle {
-      margin-right: 220px;
+    .modalTitleBox {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .modalTitle {
+        white-space: nowrap;
+      }
     }
   }
+
+  .receiptModal {
+    background: #f00;
+  }
+
   .buy {
     display: flex;
     flex-direction: column;
