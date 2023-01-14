@@ -50,6 +50,16 @@ function App() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const refModal = useRef();
 
+  const openBuyModal = () => {
+    if (priceTotal > 500000) {
+      return window.alert("상품 가격을 500,000원 이하로 맞춰주세요.");
+    }
+    if (priceTotal === 0) {
+      return window.alert("장바구니에 담긴 상품이 없습니다.");
+    }
+    setIsModalVisible(true);
+  };
+
   useEffect(() => {
     // 모달이 열려 있고 모달의 바깥쪽을 눌렀을 때 창 닫기
     const clickOutside = (e) => {
@@ -118,23 +128,40 @@ function App() {
   // ----- 장바구니에서 선택한 제품 삭제하기 -----
 
   // ----- 장바구니에 담긴 아이템 전체가격 -----
+  const [priceTotal, setPriceTotal] = useState(0);
+
   const getPriceTotalFromCartList = (itemList) => {
-    let priceTotal = 0;
+    let tempPriceTotal = 0;
 
-    itemList.forEach((item) => {
-      priceTotal += item.price * item.amount;
-    });
+    if (itemList) {
+      itemList.forEach((item) => {
+        tempPriceTotal += item.price * item.amount;
+      });
+    }
 
-    priceTotal = getPriceComma(priceTotal);
-    return priceTotal;
+    return tempPriceTotal;
   };
+
+  useEffect(() => {
+    if (priceTotal > 500000) {
+      window.alert("상품가격이 500,000원을 초과했습니다. 상품을 제외해주세요.");
+    }
+  }, [priceTotal]);
   // ----- 장바구니에 담긴 아이템 전체가격 -----
 
-  // 장바구니 렌더링용 state 변화감지
+  // ----- 장바구니 비우기 -----
+  const clearCartList = () => {
+    cartList.forEach((cartItem) => (cartItem.amount = 0));
+    setCartList([]);
+  };
+  // ----- 장바구니 비우기 -----
+
+  // 장바구니 렌더링용 state 변화감지 (지금은 id 변화 감지, 원래는 "cartList의 수량" state가 업데이트 될 때마다로)
   useEffect(() => {
+    setPriceTotal(getPriceTotalFromCartList(cartList));
     setIdSelectedItem(null);
     console.log(cartList);
-  }, [idSelectedItem]);
+  }, [idSelectedItem, cartList]);
   // 장바구니~
 
   return (
@@ -180,7 +207,7 @@ function App() {
                           <div className="cartItemCard">
                             <div className="text">
                               <strong className="cartItemTitle">{cartItem.title}</strong>
-                              {getPriceComma(cartItem.price)}원
+                              {cartItem.price}원
                             </div>
                             <CloseButton onClick={() => removeCartItem(cartItem.id)} />
                           </div>
@@ -209,8 +236,16 @@ function App() {
 
               <ListGroup.Item className="buy">
                 {/* 토탈 */}
-                <strong>총 액수 : {getPriceTotalFromCartList(cartList)}원</strong>
-                <Button onClick={() => setIsModalVisible(true)} variant="primary">
+                <div className="buyInfo">
+                  <strong className="totalPrice">총 액수 : {getPriceComma(priceTotal)}원</strong>
+                  {cartList.length ? (
+                    <Button className="clearCart" variant="danger" onClick={() => clearCartList()}>
+                      장바구니 비우기
+                    </Button>
+                  ) : null}
+                </div>
+
+                <Button onClick={() => openBuyModal()} variant="primary">
                   구매하기
                 </Button>
               </ListGroup.Item>
@@ -243,7 +278,7 @@ function App() {
                     </Form.Group>
                   </Form>
                 </Modal.Body>
-                <div style={{ margin: "0 0 10px 10px" }}>총 액수 : {getPriceTotalFromCartList()}원</div>
+                <div style={{ margin: "0 0 10px 10px" }}>총 액수 : {getPriceComma(priceTotal)}원</div>
                 <Modal.Footer>
                   <Button variant="secondary">취소하기</Button>
                   <Button variant="primary">구매하기</Button>

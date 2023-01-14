@@ -49,5 +49,18 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+
+    .buyInfo {
+      display: flex;
+      justify-content: space-between;
+      .totalPrice {
+        display: inline-block;
+      }
+
+      .clearCart {
+        font-size: 13px;
+        padding: 2px 4px;
+      }
+    }
   }
 }
