@@ -5,6 +5,13 @@
   display: none;
 }
 
+.stageVisible {
+  display: block;
+}
+.stageInvisible {
+  display: none;
+}
+
 .itemList {
   display: flex;
   flex-direction: row;
@@ -36,45 +43,44 @@
       width: 100px;
     }
   }
-  .infoModal,
-  .receiptModal {
-    position: absolute;
-    min-width: 300px;
-    max-width: 500px;
-    left: 0;
-    transform: translateX(-100%);
+}
 
-    .modalTitleBox {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      .modalTitle {
-        white-space: nowrap;
-      }
+.infoModal,
+.receiptModal {
+  position: absolute;
+  min-width: 300px;
+  max-width: 500px;
+  height: 550px;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+
+  .modalTitleBox {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .modalTitle {
+      white-space: nowrap;
     }
   }
+}
 
-  .receiptModal {
-    background: #f00;
-  }
+.buy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 
-  .buy {
+  .buyInfo {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    justify-content: space-between;
+    .totalPrice {
+      display: inline-block;
+    }
 
-    .buyInfo {
-      display: flex;
-      justify-content: space-between;
-      .totalPrice {
-        display: inline-block;
-      }
-
-      .clearCart {
-        font-size: 13px;
-        padding: 2px 4px;
-      }
+    .clearCart {
+      font-size: 13px;
+      padding: 2px 4px;
     }
   }
 }

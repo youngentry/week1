@@ -65,12 +65,15 @@ function App() {
     setPhoneNumber("");
   };
 
+  const [modalStage, setModalStage] = useState(0);
+
   useEffect(() => {
     // 모달이 열려 있고 모달의 바깥쪽을 눌렀을 때 창 닫기
     const clickOutside = (e) => {
       if ((isModalVisible && !refModal.current.contains(e.target)) || !isModalVisible) {
         setIsModalVisible(false);
         clearModalInput();
+        setModalStage(0);
       }
     };
     document.addEventListener("mousedown", clickOutside);
@@ -80,7 +83,6 @@ function App() {
       document.removeEventListener("mousedown", clickOutside);
     };
   }, [isModalVisible]);
-
   // ----- 모달창 visible -----
 
   // ~장바구니
@@ -200,8 +202,8 @@ function App() {
 
   return (
     <div className="App">
-      {/* 상품목록 */}
-      <Container className="mt-5" style={{ minWidth: "1000px" }}>
+      <Container className="mt-5 product" style={{ minWidth: "1000px" }}>
+        {/* 상품목록 */}
         <Row>
           <Col sm={8}>
             <h2>제품목록</h2>
@@ -279,52 +281,104 @@ function App() {
                   ) : null}
                 </div>
 
-                <Button onClick={() => openBuyModal()} variant="primary">
+                <Button
+                  onClick={() => {
+                    openBuyModal();
+                    setModalStage(1);
+                  }}
+                  variant="primary"
+                >
                   구매하기
                 </Button>
               </ListGroup.Item>
               <ListGroup.Item>드래거블존</ListGroup.Item>
             </ListGroup>
-            {/* 모달창 */}
-            <div className={`modal show infoModal ${isModalVisible ? "visible" : "invisible"}`} ref={refModal}>
-              <Modal.Dialog>
-                <Modal.Header>
-                  <Modal.Title>
-                    <span className="modalTitle">개인정보입력</span>
-                    <CloseButton onClick={() => setIsModalVisible(false)} />
-                  </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                  <Form>
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
-                      <Form.Label>이름</Form.Label>
-                      <Form.Control type="text" placeholder="이름" maxLength={4} onChange={(e) => setName(checkName(e.target.value))} value={name} />
-                      <Form.Text className="text-muted">영어, 5글자 이상, 특수기호 압수.</Form.Text>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="formBasicPassword">
-                      <Form.Label>연락처</Form.Label>
-                      <Form.Control type="tel" placeholder="000-0000-0000" maxLength={11} onChange={(e) => setPhoneNumber(checkPhoneNumber(e.target.value))} value={phoneNumber} />
-                      <Form.Text className="text-muted">영어, 특수기호, 한글 압수.</Form.Text>
-                    </Form.Group>
-                    <Form.Group className="mb-3" controlId="formBasicCheckbox">
-                      <Form.Check type="checkbox" label="이벤트성 광고를 1시간마다 수신하지 않지 않지 않지 않지 않지 않지 않지 않지 않지 않겠습니다." />
-                    </Form.Group>
-                  </Form>
-                </Modal.Body>
-                <div style={{ margin: "0 0 10px 10px" }}>총 액수 : {getPriceComma(priceTotal)}원</div>
-                <Modal.Footer>
-                  <Button variant="secondary" onClick={() => setIsModalVisible(false)}>
-                    취소하기
-                  </Button>
-                  <Button variant="primary" onClick={() => setIsModalVisible(false)}>
-                    다음으로
-                  </Button>
-                </Modal.Footer>
-              </Modal.Dialog>
-            </div>
           </Col>
         </Row>
+        {/* 모달창 */}
+        <div className={`modalBox  ${isModalVisible ? "visible" : "invisible"}`} ref={refModal}>
+          <div className={`modal show infoModal ${modalStage === 1 ? "stageVisible" : "stageInvisible"}`}>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Title className="modalTitleBox">
+                  <span className="modalTitle">개인정보입력</span>
+                  <CloseButton onClick={() => setIsModalVisible(false)} />
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Form>
+                  <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>이름</Form.Label>
+                    <Form.Control type="text" placeholder="이름" maxLength={4} onChange={(e) => setName(checkName(e.target.value))} value={name} />
+                    <Form.Text className="text-muted">영어, 5글자 이상, 특수기호 압수.</Form.Text>
+                  </Form.Group>
+                  <Form.Group className="mb-3" controlId="formBasicPassword">
+                    <Form.Label>연락처</Form.Label>
+                    <Form.Control type="tel" placeholder="000-0000-0000" maxLength={11} onChange={(e) => setPhoneNumber(checkPhoneNumber(e.target.value))} value={phoneNumber} />
+                    <Form.Text className="text-muted">영어, 특수기호, 한글 압수.</Form.Text>
+                  </Form.Group>
+                  <Form.Group className="mb-3" controlId="formBasicCheckbox">
+                    <Form.Check type="checkbox" label="이벤트성 광고를 1시간마다 수신하지 않지 않지 않지 않지 않지 않지 않지 않지 않지 않겠습니다." />
+                  </Form.Group>
+                </Form>
+              </Modal.Body>
+              <div style={{ margin: "0 0 10px 10px" }}>총 액수 : {getPriceComma(priceTotal)}원</div>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={() => setIsModalVisible(false)}>
+                  취소하기
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setModalStage(2);
+                  }}
+                >
+                  다음으로
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </div>
+          <div className={`modal show receiptModal ${modalStage === 2 ? "stageVisible" : "stageInvisible"}`}>
+            <Modal.Dialog>
+              <Modal.Header>
+                <Modal.Title className="modalTitleBox">
+                  <span className="modalTitle">영수증</span>
+                  <CloseButton onClick={() => setIsModalVisible(false)} />
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div>{`${new Date()}`}</div>
+                <div>
+                  {cartList.map((cartItem) => {
+                    return (
+                      <div>
+                        <strong>
+                          {cartItem.title} {cartItem.amount}개 {cartItem.price * cartItem.amount}원
+                        </strong>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Modal.Body>
+
+              <Modal.Footer>
+                <h3>총 액수 : {getPriceComma(priceTotal)}원</h3>
+                <Button variant="secondary" onClick={() => setModalStage(1)}>
+                  이전으로
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setIsModalVisible(false);
+                    window.alert("성공적으로 결제되었습니다.");
+                  }}
+                >
+                  결제하기
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </div>
+        </div>
       </Container>
     </div>
   );
