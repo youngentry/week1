@@ -85,7 +85,7 @@ function App() {
   }, [isModalVisible]);
   // ----- 모달창 visible -----
 
-  // ~장바구니
+  // ~~~~~장바구니~~~~~
   // ----- 장바구니에 제품 추가하기 -----
   const [cartList, setCartList] = useState([]);
   const [idSelectedItem, setIdSelectedItem] = useState(null);
@@ -171,11 +171,12 @@ function App() {
     setIdSelectedItem(null);
     console.log(cartList);
   }, [idSelectedItem, cartList]);
-  // 장바구니~
+  // ~~~~~장바구니~~~~~
 
-  // ----- 개인정보입력 -----
+  // ~~~~~개인정보입력~~~~~
   const [name, setName] = useState("");
 
+  // ----- 이름 입력에 한글만 허용하기 -----
   const checkName = (name) => {
     // ^:첫문자부터 $:끝문자까지 *:공백을 포함하여 1회 이상
     const checkKorean = /^[ㄱ-ㅎ|가-힣]*$/;
@@ -186,9 +187,11 @@ function App() {
 
     return name;
   };
+  // ----- 이름 입력에 한글만 허용하기 -----
 
   const [phoneNumber, setPhoneNumber] = useState("");
 
+  // ----- 휴대폰 번호 입력에 숫자만 허용하기 -----
   const checkPhoneNumber = (phoneNumber) => {
     const checkNumber = /^[0-9]*$/;
     if (!checkNumber.test(phoneNumber)) {
@@ -198,7 +201,9 @@ function App() {
 
     return phoneNumber;
   };
+  // ----- 휴대폰 번호 입력에 숫자만 허용하기 -----
 
+  // ----- 제출 시 입력값 검사하기 -----
   // input 창이 비어있으면 다음단계로 넘어가지 않고 focus 해주도록 함
   const nameInputRef = useRef();
   const phoneInputRef = useRef();
@@ -214,13 +219,17 @@ function App() {
     }
     return true;
   };
+  // ----- 제출 시 입력값 검사하기 -----
+  // ~~~~~개인정보입력~~~~~
 
-  const nextModalStage = (stage) => {
-    if (isValidateInfo()) {
+  // ----- 모달창 다음 단계로 넘기기 -----
+  const flipModalStage = (validateInput, stage) => {
+    const validation = validateInput();
+    if (validation) {
       setModalStage(stage + 1);
     }
   };
-  // ----- 개인정보입력 -----
+  // ----- 모달창 다음 단계로 넘기기
 
   return (
     <div className="App">
@@ -234,8 +243,8 @@ function App() {
                 <ListGroup className="itemList">
                   {shoesData?.map((data, index) => {
                     return (
-                      <Card className="itemCard" data-id={data.id} key={data.id} style={{ width: "18rem" }} onDragStart={(e) => e.dataTransfer.setData("id", data.id)}>
-                        <Card.Img variant="top" src={`https://codingapple1.github.io/shop/shoes${data.id + 1}.jpg`} />
+                      <Card className="itemCard" data-id={data.id} key={data.id} style={{ width: "18rem" }} onDragStart={(e) => e.dataTransfer.setData("id", data.id)} draggable="true">
+                        <Card.Img variant="top" src={`https://codingapple1.github.io/shop/shoes${data.id + 1}.jpg`} draggable="false" />
                         <Card.Body>
                           <Card.Title>{data.title}</Card.Title>
                           <Card.Text>{data.content}</Card.Text>
@@ -260,7 +269,6 @@ function App() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   let productId = parseInt(e.dataTransfer.getData("id"));
-                  console.log(productId);
                   addItemIntoCartList(productId);
                 }}
               >
@@ -364,7 +372,7 @@ function App() {
                 <Button
                   variant="primary"
                   onClick={() => {
-                    nextModalStage(modalStage);
+                    flipModalStage(isValidateInfo, modalStage);
                   }}
                 >
                   다음으로
