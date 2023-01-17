@@ -94,7 +94,7 @@ function App() {
     setIdSelectedItem(id);
 
     const itemFoundByIdFromShoesData = shoesData.find((shoes) => shoes.id === id);
-
+    console.log(itemFoundByIdFromShoesData, id);
     // cartList 데이터 업데이트하기 (있으면 수량++, 없으면 상품목록에 추가)
     if (itemFoundByIdFromShoesData.amount) {
       return (itemFoundByIdFromShoesData.amount += 1);
@@ -198,6 +198,28 @@ function App() {
 
     return phoneNumber;
   };
+
+  // input 창이 비어있으면 다음단계로 넘어가지 않고 focus 해주도록 함
+  const nameInputRef = useRef();
+  const phoneInputRef = useRef();
+
+  const isValidateInfo = () => {
+    if (name === "") {
+      window.alert("이름을 입력해주세요.");
+      return nameInputRef.current.focus();
+    }
+    if (phoneNumber.length < 10) {
+      window.alert("올바른 전화번호를 입력해주세요. : 10자리 미만");
+      return phoneInputRef.current.focus();
+    }
+    return true;
+  };
+
+  const nextModalStage = (stage) => {
+    if (isValidateInfo()) {
+      setModalStage(stage + 1);
+    }
+  };
   // ----- 개인정보입력 -----
 
   return (
@@ -212,7 +234,7 @@ function App() {
                 <ListGroup className="itemList">
                   {shoesData?.map((data, index) => {
                     return (
-                      <Card className="itemCard" key={data.id} style={{ width: "18rem" }}>
+                      <Card className="itemCard" data-id={data.id} key={data.id} style={{ width: "18rem" }} onDragStart={(e) => e.dataTransfer.setData("id", data.id)}>
                         <Card.Img variant="top" src={`https://codingapple1.github.io/shop/shoes${data.id + 1}.jpg`} />
                         <Card.Body>
                           <Card.Title>{data.title}</Card.Title>
@@ -234,7 +256,14 @@ function App() {
             <h2>장바구니</h2>
             <ListGroup>
               {/* 상품명 */}
-              <ListGroup.Item>
+              <ListGroup.Item
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  let productId = parseInt(e.dataTransfer.getData("id"));
+                  console.log(productId);
+                  addItemIntoCartList(productId);
+                }}
+              >
                 <ul>
                   {cartList.length ? (
                     cartList.map((cartItem, index) => {
@@ -265,7 +294,12 @@ function App() {
                       );
                     })
                   ) : (
-                    <span>장바구니에 담긴 상품이 없습니다.</span>
+                    <div>
+                      <div>장바구니에 담긴 상품이 없습니다.</div>
+                      <br />
+                      <div>"장바구니에 추가"버튼 클릭하여 추가</div>
+                      <div>"제품 이미지를 드래그"하여 장바구니로 끌어와 장바구니에 추가</div>
+                    </div>
                   )}
                 </ul>
               </ListGroup.Item>
@@ -309,12 +343,12 @@ function App() {
                 <Form>
                   <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>이름</Form.Label>
-                    <Form.Control type="text" placeholder="이름" maxLength={4} onChange={(e) => setName(checkName(e.target.value))} value={name} />
+                    <Form.Control type="text" placeholder="이름" maxLength={4} onChange={(e) => setName(checkName(e.target.value))} value={name} ref={nameInputRef} />
                     <Form.Text className="text-muted">영어, 5글자 이상, 특수기호 압수.</Form.Text>
                   </Form.Group>
                   <Form.Group className="mb-3" controlId="formBasicPassword">
                     <Form.Label>연락처</Form.Label>
-                    <Form.Control type="tel" placeholder="000-0000-0000" maxLength={11} onChange={(e) => setPhoneNumber(checkPhoneNumber(e.target.value))} value={phoneNumber} />
+                    <Form.Control type="tel" placeholder="000-0000-0000" maxLength={11} onChange={(e) => setPhoneNumber(checkPhoneNumber(e.target.value))} value={phoneNumber} ref={phoneInputRef} />
                     <Form.Text className="text-muted">영어, 특수기호, 한글 압수.</Form.Text>
                   </Form.Group>
                   <Form.Group className="mb-3" controlId="formBasicCheckbox">
@@ -330,7 +364,7 @@ function App() {
                 <Button
                   variant="primary"
                   onClick={() => {
-                    setModalStage(2);
+                    nextModalStage(modalStage);
                   }}
                 >
                   다음으로
@@ -370,6 +404,7 @@ function App() {
                   variant="primary"
                   onClick={() => {
                     setIsModalVisible(false);
+                    clearCartList();
                     window.alert("성공적으로 결제되었습니다.");
                   }}
                 >
